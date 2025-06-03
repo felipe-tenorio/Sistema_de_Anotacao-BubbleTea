@@ -26,33 +26,56 @@ class Pedido():
         self.preco_total = 0.00
         self.preco_final = 0.00
         self.desconto = None
-        self.cashback_usado = None
+        self.cashback_usado = 0.00
 
     def escolher_base(self):
         bases_precos = {'leite': 4.35, 'maracujá': 4.60, 'rosa': 5.85, 'manga': 5.47}
         validacao = 0
         while validacao == 0:
-            self.base = input('Digite qual dessas bases você deseja: \n[Leite: R$4,35] \n[Maracujá: R$4,60] \n[Rosa: R$5,85] \n[Manga: R$5,47]\n').lower()
+            self.base = input('Digite o número correspondente a base que você deseja: \n[1] Leite: R$4,35 \n[2] Maracujá: R$4,60 \n[3] Rosa: R$5,85 \n[4] Manga: R$5,47\n').lower()
+            match self.base:
+                case '1':
+                    self.base = 'leite'
+                case '2':
+                    self.base = 'maracujá'
+                case '3':
+                    self.base = 'rosa'
+                case '4':
+                    self.base = 'manga'
+                case _:
+                    print('Opção inválida.')
             try:
                 self.preco_total += bases_precos[self.base]
                 validacao = 1
             except:
-                print('Opção inválida.')
                 validacao = 0
 
     def escolher_adicional(self):
         adicionais_precos = {'boba': 0.50, 'lichia': 0.75, 'geleia': 0.65, 'taro': 1.00, 'chia': 0.35}
+        adicionais_numeros = {'1': 'boba', '2': 'lichia', '3': 'geleia', '4': 'taro', '5': 'chia'}
         acao_pa = 0
         while acao_pa == 0:
-            add = input('Digite qual desses adicionais você deseja (Só pode ser escolhido um adiconal de cada): \n[Boba: R$0,50] \n[Lichia: R$0,75] \n[Geleia: R$0,65] \n[Taro: R$1,00] \n[Chia: R$0,35]\n').lower()
-            if add in adicionais_precos:
+            add = input('Digite o número correspondente ao adicionnal que deseja: \n(Só pode ser escolhido um adiconal de cada): \n[1] Boba: R$0,50 \n[2] Lichia: R$0,75 \n[3] Geleia: R$0,65 \n[4] Taro: R$1,00 \n[5] Chia: R$0,35\n').lower()
+            if adicionais_numeros.get(add) in adicionais_precos:
                 if add in self.adicionais:
                     print('Você não pode repetir o adicional!')
                     acao_pa = 0
                 else:
-                    self.adicionais.append(add)
-                    self.preco_total += adicionais_precos[add]
-                    continuar = input('Digite [1] caso queira colocar outros adicionais. \nDigite qualquer outra coisa para continuar a compra.\n')
+                    match add:
+                        case '1':
+                            self.adicionais.append('boba')
+                        case '2':
+                            self.adicionais.append('lichia')
+                        case '3':
+                            self.adicionais.append('geleia')
+                        case '4':
+                            self.adicionais.append('taro')
+                        case '5':
+                            self.adicionais.append('chia')
+                        case _:
+                            print('Erro.')
+                    self.preco_total += adicionais_precos[adicionais_numeros.get(add)]
+                    continuar = input('\nDigite [1] caso queira colocar outros adicionais. \nDigite qualquer outra coisa para continuar a compra.\n')
                     if continuar != '1':
                             acao_pa = 1
                     else:
@@ -116,3 +139,23 @@ def resumo_pedido(pedido, cliente):
     else:
         print('Cashback usado: R$', pedido.cashback_usado)
     print('Saldo de cashback atual: R$', cliente.cashback)
+
+def registro_pedido(pedido, cliente):
+    arquivo = 'historico_pedidos.csv'
+    try:
+     with open(arquivo) as file:
+          data_registro = file.readlines()
+    except:
+        with open(arquivo, mode='w') as file:
+            file.write('Cliente;Ocupação;Cashback;Preço_total;Base;Adicionais;Cashback_usado;Preço_final\n')
+        with open(arquivo) as file:
+            data_registro = file.readlines()
+    pedido.cashback_usado = str(pedido.cashback_usado)
+    data_registro.append(cliente.nome + ';' + cliente.categoria+';'+cliente.cashback+';'+str(pedido.preco_total)+';'+str(pedido.base)+';'+pedido.adicionais+';'+str(pedido.cashback_usado)+';'+str(pedido.preco_final)+'\n')
+    registro = str()
+    
+    for i in range(data_registro):
+        registro += data_registro[i]
+    
+    with open(arquivo, mode='w') as file:
+        file.write(registro)
